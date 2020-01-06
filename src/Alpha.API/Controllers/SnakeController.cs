@@ -8,6 +8,13 @@ namespace Alpha.API.Controllers
     [Route("")]
     public class SnakeController : ControllerBase
     {
+        private readonly ISnakeCharmer _snakeCharmer;
+
+        public SnakeController(ISnakeCharmer snakeCharmer)
+        {
+            _snakeCharmer = snakeCharmer;
+        }
+
         [HttpGet]
         public IActionResult Get()
         {
@@ -28,9 +35,10 @@ namespace Alpha.API.Controllers
         [Route("Move")]
         public IActionResult Move(GameState state)
         {
-            var charmer = new SnakeCharmer(state);
-            var direction = charmer.MoveSnake();
-            return Ok(direction.DisplayName);
+            _snakeCharmer.AssessSituation(state);
+            var direction = _snakeCharmer.MoveSnake();
+            var move = new Move(direction);
+            return Ok(move);
         }
 
         [HttpPost]

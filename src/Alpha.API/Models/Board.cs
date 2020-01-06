@@ -5,10 +5,11 @@ namespace Alpha.API.Models
 {
     public class Board
     {
+        //Y
         public int Height { get; set; }
+        //X
         public int Width { get; set; }
         public Coordinate[] Food { get; set; }
         public IEnumerable<Snake> Snakes { get; set; }
-        public IEnumerable<Coordinate> Walls { get; set; }
     }
 }

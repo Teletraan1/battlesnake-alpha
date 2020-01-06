@@ -4,6 +4,7 @@ namespace Alpha.API.Models
 {
     public class Snake
     {
+        public const int MaxHealth = 100;
         public string Id { get; set; }
         public string Name { get; set; }
         public int Health { get; set; }

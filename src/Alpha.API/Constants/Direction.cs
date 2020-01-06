@@ -1,4 +1,5 @@
 ﻿using Alpha.API.Seedwork;
+using System.Linq;
 
 namespace Alpha.API.Constants
 {
@@ -9,13 +10,15 @@ namespace Alpha.API.Constants
         public static readonly Direction Left = new Direction(2, @"left");
         public static readonly Direction Right = new Direction(3, @"right");
 
-        public Coordinate Coordinate { get; private set; }
+        public static readonly Direction[] All = GetAll<Direction>().ToArray();
 
-        private Direction() { }
+        public Coordinate Slither { get; private set; }
+
+        public Direction() { }
 
         private Direction(int value, string name) : base(value, name) 
         {
-            Coordinate = value switch
+            Slither = value switch
             {
                 0 => new Coordinate(0, -1),
                 1 => new Coordinate(0, 1),
