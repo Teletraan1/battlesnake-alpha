@@ -4,11 +4,13 @@ namespace Alpha.API.Payloads.Responses
 {
     public class Start
     {
-        public string Color { get; private set; } = "#F28500";
+        public string Color { get; private set; } = "#9ebd60";
         public string HeadType { get; private set; } = HeadTypes.Pixel;
         public string TailType { get; private set; } = TailTypes.Pixel;
 
-        public Start() { }
+        public Start()
+        {
+        }
 
         public Start(string color, string headType, string tailType)
         {

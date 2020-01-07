@@ -12,13 +12,15 @@ namespace Alpha.API.Constants
 
         public static readonly Direction[] All = GetAll<Direction>().ToArray();
 
-        public Coordinate Slither { get; private set; }
+        public Coordinate Offset { get; }
 
-        public Direction() { }
-
-        private Direction(int value, string name) : base(value, name) 
+        public Direction()
         {
-            Slither = value switch
+        }
+
+        private Direction(int value, string name) : base(value, name)
+        {
+            Offset = value switch
             {
                 0 => new Coordinate(0, -1),
                 1 => new Coordinate(0, 1),

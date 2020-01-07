@@ -7,9 +7,12 @@ namespace Alpha.API.Models
     {
         //Y
         public int Height { get; set; }
+
         //X
         public int Width { get; set; }
-        public Coordinate[] Food { get; set; }
+
+        internal Coordinate[] Food { get; set; }
+
         public IEnumerable<Snake> Snakes { get; set; }
     }
 }

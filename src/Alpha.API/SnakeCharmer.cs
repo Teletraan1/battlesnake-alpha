@@ -13,57 +13,65 @@ namespace Alpha.API
         private const int FOOD_DISTANCE = 5;
 
         private readonly IRandomizer _randomizer;
+        private readonly IGrid _grid;
 
         private Board _board;
         private Snake _you;
         private int _turn;
         private List<Snake> _snakes = new List<Snake>();
+        private List<Snake> _enemySnakes = new List<Snake>();
 
         private int _lowHealthThreshold;
 
-        public SnakeCharmer(IRandomizer randomizer)
+        public SnakeCharmer(IRandomizer randomizer, IGrid grid)
         {
             _randomizer = randomizer;
+            _grid = grid;
         }
 
         public void AssessSituation(GameState state)
         {
-            _board = state.Board;
-            _you = state.You;
+            if (state == null) throw new ArgumentNullException(nameof(state));
+
             _turn = state.Turn;
+            _board = state.Board;
             _snakes = state.Board.Snakes.ToList();
+            _you = state.You;
+            _enemySnakes = state.Board.Snakes.Where(snake => snake.Id != _you.Id).ToList();
 
             _lowHealthThreshold = CalculateHealthTheshold();
+
+            UpdateGrid(_board.Food, _you, _enemySnakes);
         }
 
         public Direction MoveSnake()
         {
-            var options = Direction.All;
+            var options = Direction.All.ToList();
 
-            Console.WriteLine("Turn {0}", _turn);
+            Console.WriteLine($"Turn {_turn}");
 
             BasicAvoidance(options);
 
-            if (options.Length == 1) 
+            if (options.Count == 1)
                 return options.First();
-            
-            if (options.Length > 1)
+
+            if (options.Count > 1)
             {
                 //Go thorugh priority list
                 if (IsLowHealth(_you.Health))
                 {
                     //find closest food
-                    Console.WriteLine("Health is low at {0}", _you.Health);
+                    Console.WriteLine($"Health is low at {_you.Health}");
                 }
 
-                var index = _randomizer.Roll(0, options.Length - 1);
+                var index = _randomizer.Roll(0, options.Count - 1);
                 return options[index];
             }
 
             return Direction.Right;
         }
-                
-        private void BasicAvoidance(IList<Direction> options)
+
+        private void BasicAvoidance(ICollection<Direction> options)
         {
             foreach (var direction in Direction.All)
             {
@@ -75,7 +83,7 @@ namespace Alpha.API
                     continue;
                 }
 
-                Console.WriteLine("Viable Direction {0}", choice);
+                Console.WriteLine($"Viable Direction {choice}");
             }
         }
 
@@ -97,7 +105,7 @@ namespace Alpha.API
             foreach (var snake in _snakes)
             {
                 var body = snake.Body.Skip(1);
-                if (body.Where(piece => coordinate.Equals(piece)).Count() > 0)
+                if (body.Where(coordinate.Equals).Any())
                     return true;
             }
 
@@ -115,7 +123,20 @@ namespace Alpha.API
             var numerator = Math.Abs(_turn - _you.Health);
             var denominator = _turn + _you.Health;
             var ratio = decimal.Divide(numerator, denominator) * Snake.MaxHealth;
-           return (int)(Snake.MaxHealth - Math.Round(ratio));
+            return (int)(Snake.MaxHealth - Math.Round(ratio));
+        }
+
+        private void UpdateGrid(Coordinate[] food, Snake you, IEnumerable<Snake> enemySnakes)
+        {
+            _grid.SetCellType(food, CellType.Food);
+            _grid.SetCellType(you.Body, CellType.You);
+
+            foreach (var snake in enemySnakes)
+            {
+                var body = snake.Body.Skip(1).ToArray();
+                _grid.SetCellType(body, CellType.Enemy);
+                _grid.SetCellType(snake.Head, CellType.EnemyHead);
+            }
         }
     }
 }
