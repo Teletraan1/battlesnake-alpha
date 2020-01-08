@@ -4,7 +4,13 @@ namespace Alpha.API.Seedwork
 {
     public interface IGrid
     {
-        void SetCellType(Coordinate coordinate, CellType cellType);
+#pragma warning disable CA1043 // Use Integral Or String Argument For Indexers
+        CellType this[Coordinate coordinate] { get; set; }
+#pragma warning restore CA1043 // Use Integral Or String Argument For Indexers
+
+        void Initialize(int height, int width);
+
+        bool IsInitialized();
 
         void SetCellType(Coordinate[] coordinates, CellType cellType);
 

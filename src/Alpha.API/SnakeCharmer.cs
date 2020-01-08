@@ -18,8 +18,8 @@ namespace Alpha.API
         private Board _board;
         private Snake _you;
         private int _turn;
-        private List<Snake> _snakes = new List<Snake>();
-        private List<Snake> _enemySnakes = new List<Snake>();
+        private Snake[] _snakes;
+        private Snake[] _enemySnakes;
 
         private int _lowHealthThreshold;
 
@@ -35,11 +35,13 @@ namespace Alpha.API
 
             _turn = state.Turn;
             _board = state.Board;
-            _snakes = state.Board.Snakes.ToList();
+            _snakes = state.Board.Snakes.ToArray();
             _you = state.You;
-            _enemySnakes = state.Board.Snakes.Where(snake => snake.Id != _you.Id).ToList();
+            _enemySnakes = state.Board.Snakes.Where(snake => snake.Id != _you.Id).ToArray();
 
-            _lowHealthThreshold = CalculateHealthTheshold();
+            _lowHealthThreshold = CalculateHealthThreshold();
+
+            if (!_grid.IsInitialized()) _grid.Initialize(_board.Height, _board.Width);
 
             UpdateGrid(_board.Food, _you, _enemySnakes);
         }
@@ -55,20 +57,17 @@ namespace Alpha.API
             if (options.Count == 1)
                 return options.First();
 
-            if (options.Count > 1)
-            {
-                //Go thorugh priority list
-                if (IsLowHealth(_you.Health))
-                {
-                    //find closest food
-                    Console.WriteLine($"Health is low at {_you.Health}");
-                }
+            if (options.Count <= 1) return Direction.Right;
 
-                var index = _randomizer.Roll(0, options.Count - 1);
-                return options[index];
+            //Go through priority list
+            if (IsLowHealth(_you.Health))
+            {
+                //find closest food
+                Console.WriteLine($"Health is low at {_you.Health}");
             }
 
-            return Direction.Right;
+            var index = _randomizer.Roll(0, options.Count - 1);
+            return options[index];
         }
 
         private void BasicAvoidance(ICollection<Direction> options)
@@ -90,26 +89,14 @@ namespace Alpha.API
         //Avoid going out of bounds.
         private bool IsWall(Coordinate coordinate)
         {
-            if (coordinate.Y == -1 || coordinate.Y == _board.Height)
-                return true;
-
-            if (coordinate.X == -1 || coordinate.X == _board.Width)
-                return true;
-
-            return false;
+            return _grid.LookAhead(coordinate) == CellType.Wall;
         }
 
-        //Any snake's bodypart except for heads.
+        //Any snake's body-part except for heads.
         private bool IsBody(Coordinate coordinate)
         {
-            foreach (var snake in _snakes)
-            {
-                var body = snake.Body.Skip(1);
-                if (body.Where(coordinate.Equals).Any())
-                    return true;
-            }
-
-            return false;
+            var cellType = _grid[coordinate];
+            return cellType == CellType.Enemy || cellType == CellType.You;
         }
 
         private bool IsLowHealth(int health)
@@ -118,7 +105,7 @@ namespace Alpha.API
             return effectiveHealth < Snake.MaxHealth - _lowHealthThreshold;
         }
 
-        private int CalculateHealthTheshold()
+        private int CalculateHealthThreshold()
         {
             var numerator = Math.Abs(_turn - _you.Health);
             var denominator = _turn + _you.Health;
@@ -135,7 +122,7 @@ namespace Alpha.API
             {
                 var body = snake.Body.Skip(1).ToArray();
                 _grid.SetCellType(body, CellType.Enemy);
-                _grid.SetCellType(snake.Head, CellType.EnemyHead);
+                _grid[snake.Head] = CellType.EnemyHead;
             }
         }
     }

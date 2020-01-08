@@ -1,5 +1,5 @@
-﻿using Alpha.API.Constants;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
+using Alpha.API.Seedwork;
 
 namespace Alpha.API.Payloads.Responses
 {
@@ -8,11 +8,13 @@ namespace Alpha.API.Payloads.Responses
         [JsonPropertyName("move")]
         public string Direction { get; private set; } = @"up";
 
-        public Move() { }
-
-        public Move(Direction direction)
+        public Move()
         {
-            Direction = direction.DisplayName;
+        }
+
+        public Move(Enumeration direction)
+        {
+            if (direction != null) Direction = direction.DisplayName;
         }
     }
 }

@@ -1,39 +1,81 @@
 ﻿using Alpha.API.Constants;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Alpha.API.Seedwork
 {
     public class Grid : IGrid
     {
-        public int Height { get; }
-        public int Width { get; }
+        public int Height { get; private set; }
+        public int Width { get; private set; }
+        public bool Initialized { get; private set; } = false;
 
-        private readonly CellType[] _cells;
+        private CellType[][] _cells;
 
-        public Grid(int height, int width)
+        public Grid()
+        {
+        }
+
+        public void Initialize(int height, int width)
         {
             Height = height;
             Width = width;
 
-            _cells = new CellType[Height * Width];
-            _cells.SetAll(CellType.Empty);
+            _cells = new CellType[Height][];
+            var columns = new CellType[Width];
+            columns.SetAll(CellType.Empty);
+            _cells.SetAll(columns);
+
+            Initialized = true;
         }
 
-        public void SetCellType(Coordinate coordinate, CellType cellType)
+        public bool IsInitialized() => Initialized;
+
+#pragma warning disable CA1043 // Use Integral Or String Argument For Indexers
+
+        public CellType this[Coordinate coordinate]
         {
-            _cells[0] = cellType;
+            get
+            {
+                try
+                {
+                    return coordinate != null ? _cells[coordinate.Y][coordinate.X] : CellType.Wall;
+                }
+                catch (IndexOutOfRangeException)
+                {
+                    return CellType.Wall;
+                }
+            }
+            set
+            {
+                if (coordinate != null) _cells[coordinate.Y][coordinate.X] = value;
+            }
         }
+
+#pragma warning restore CA1043 // Use Integral Or String Argument For Indexers
 
         public void SetCellType(Coordinate[] coordinates, CellType cellType)
         {
-            if (coordinates == null) throw new ArgumentNullException(nameof(coordinates));
+            if (coordinates == null) return;
 
-            foreach (var coordinate in coordinates)
+            for (var i = 0; i < coordinates.Length; ++i)
             {
-                _cells[GetIndex(coordinate)] = cellType;
+                this[coordinates[i]] = cellType;
+            }
+        }
+
+        public CellType LookAhead(Coordinate coordinate, Direction direction)
+        {
+            if (coordinate == null) throw new ArgumentNullException(nameof(coordinate));
+
+            var adjacent = coordinate.ApplyDirection(direction);
+
+            try
+            {
+                return this[adjacent];
+            }
+            catch (IndexOutOfRangeException)
+            {
+                return CellType.Wall;
             }
         }
 
@@ -41,12 +83,7 @@ namespace Alpha.API.Seedwork
         {
             if (coordinate == null) throw new ArgumentNullException(nameof(coordinate));
 
-            return _cells[GetIndex(coordinate)];
-        }
-
-        private static int GetIndex(Coordinate coordinate)
-        {
-            return coordinate.X * coordinate.Y;
+            return this[coordinate];
         }
     }
 }

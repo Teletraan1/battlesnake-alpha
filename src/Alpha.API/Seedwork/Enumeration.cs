@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 
@@ -7,28 +8,19 @@ namespace Alpha.API.Seedwork
 {
     public class Enumeration : IComparable
     {
-        private readonly int _value;
-        private readonly string _displayName;
-
         protected Enumeration()
         {
         }
 
         protected Enumeration(int value, string displayName)
         {
-            _value = value;
-            _displayName = displayName;
+            Value = value;
+            DisplayName = displayName;
         }
 
-        public int Value
-        {
-            get { return _value; }
-        }
+        public int Value { get; }
 
-        public string DisplayName
-        {
-            get { return _displayName; }
-        }
+        public string DisplayName { get; }
 
         public override string ToString()
         {
@@ -52,6 +44,17 @@ namespace Alpha.API.Seedwork
             }
         }
 
+        public static bool operator ==(Enumeration lhs, Enumeration rhs)
+        {
+            // Check for null on left side.
+            return lhs?.Equals(rhs) ?? rhs is null;
+        }
+
+        public static bool operator !=(Enumeration lhs, Enumeration rhs)
+        {
+            return !(lhs == rhs);
+        }
+
         public override bool Equals(object obj)
         {
             var otherValue = obj as Enumeration;
@@ -61,19 +64,22 @@ namespace Alpha.API.Seedwork
                 return false;
             }
 
-            var typeMatches = GetType().Equals(obj.GetType());
-            var valueMatches = _value.Equals(otherValue.Value);
+            var typeMatches = GetType() == obj.GetType();
+            var valueMatches = Value.Equals(otherValue.Value);
 
             return typeMatches && valueMatches;
         }
 
         public override int GetHashCode()
         {
-            return _value.GetHashCode();
+            return Value.GetHashCode();
         }
 
         public static int AbsoluteDifference(Enumeration firstValue, Enumeration secondValue)
         {
+            if (firstValue == null) throw new ArgumentNullException(nameof(firstValue));
+            if (firstValue == null) throw new ArgumentNullException(nameof(secondValue));
+
             var absoluteDifference = Math.Abs(firstValue.Value - secondValue.Value);
             return absoluteDifference;
         }
@@ -96,7 +102,7 @@ namespace Alpha.API.Seedwork
 
             if (matchingItem == null)
             {
-                var message = string.Format("'{0}' is not a valid {1} in {2}", value, description, typeof(T));
+                var message = string.Format(CultureInfo.InvariantCulture, "'{0}' is not a valid {1} in {2}", value, description, typeof(T));
                 throw new ApplicationException(message);
             }
 
@@ -105,6 +111,7 @@ namespace Alpha.API.Seedwork
 
         public int CompareTo(object other)
         {
+            if (other == null) return -1;
             return Value.CompareTo(((Enumeration)other).Value);
         }
     }

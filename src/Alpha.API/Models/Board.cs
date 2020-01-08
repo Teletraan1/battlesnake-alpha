@@ -11,7 +11,7 @@ namespace Alpha.API.Models
         //X
         public int Width { get; set; }
 
-        internal Coordinate[] Food { get; set; }
+        public Coordinate[] Food { get; set; }
 
         public IEnumerable<Snake> Snakes { get; set; }
     }
