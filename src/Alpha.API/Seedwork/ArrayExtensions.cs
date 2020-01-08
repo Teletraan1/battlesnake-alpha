@@ -11,17 +11,15 @@
             }
         }
 
-        public static void SetAll<T>(this T[][] array, T[] value)
+        public static void SetAll<T>(this T[,] array, T value)
         {
             if (array == null) return;
 
-            for (var i = 0; i < array.Length; ++i)
+            for (var y = 0; y < array.GetLength(0); y++)
             {
-                if (value == null) continue;
-
-                for (var j = 0; j < value.Length; ++j)
+                for (var x = 0; x < array.GetLength(1); x++)
                 {
-                    array[i] = value;
+                    array[y, x] = value;
                 }
             }
         }

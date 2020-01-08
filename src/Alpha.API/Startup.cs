@@ -29,8 +29,8 @@ namespace Alpha.API
             services.AddControllers();
 
             services.AddSingleton<IRandomizer, Randomizer>();
-            services.AddScoped<ISnakeCharmer, SnakeCharmer>();
-            services.AddScoped<IGrid, Grid>();
+            services.AddTransient<ISnakeCharmer, SnakeCharmer>();
+            services.AddTransient<IGrid, Grid>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

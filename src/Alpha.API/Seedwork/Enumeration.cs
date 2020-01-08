@@ -78,7 +78,7 @@ namespace Alpha.API.Seedwork
         public static int AbsoluteDifference(Enumeration firstValue, Enumeration secondValue)
         {
             if (firstValue == null) throw new ArgumentNullException(nameof(firstValue));
-            if (firstValue == null) throw new ArgumentNullException(nameof(secondValue));
+            if (secondValue == null) throw new ArgumentNullException(nameof(secondValue));
 
             var absoluteDifference = Math.Abs(firstValue.Value - secondValue.Value);
             return absoluteDifference;

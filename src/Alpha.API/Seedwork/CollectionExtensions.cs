@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Alpha.API.Seedwork
 {
@@ -21,11 +19,8 @@ namespace Alpha.API.Seedwork
             {
                 case null:
                     return true;
-                /* If this is a list, use the Count property for efficiency.
-             * The Count property is O(1) while IEnumerable.Count() is O(N). */
                 case ICollection<T> collection:
                     return collection.Count < 1;
-
                 default:
                     return !enumerable.Any();
             }

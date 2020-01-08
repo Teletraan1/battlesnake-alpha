@@ -1,6 +1,7 @@
 ﻿using Alpha.API.Payloads.Requests;
 using Alpha.API.Payloads.Responses;
 using Microsoft.AspNetCore.Mvc;
+using System;
 
 namespace Alpha.API.Controllers
 {
@@ -26,7 +27,9 @@ namespace Alpha.API.Controllers
         [Route("Start")]
         public IActionResult Start(GameState state)
         {
-            var gameId = state.Game.Id;
+            if (state == null) return BadRequest();
+
+            //var gameId = state.Game.Id;
             var response = new Start();
             return Ok(response);
         }
@@ -45,6 +48,11 @@ namespace Alpha.API.Controllers
         [Route("End")]
         public IActionResult End(GameState request)
         {
+            if (request == null) return Ok();
+
+            var gameId = request.Game?.Id;
+            Console.WriteLine($"Game {gameId} ended.");
+
             return Ok();
         }
 
