@@ -10,8 +10,6 @@ namespace Alpha.API
 {
     public class SnakeCharmer : ISnakeCharmer
     {
-        private const int FOOD_DISTANCE = 5;
-
         private readonly IRandomizer _randomizer;
         private readonly IGrid _grid;
 
@@ -63,6 +61,11 @@ namespace Alpha.API
 
             if (options.Count < 1) return Direction.Right;
 
+            if (IsLowHealth(_you.Health))
+            {
+                Console.WriteLine($"Low HP: {_you.Health}");
+            }
+
             var index = _randomizer.Roll(0, options.Count - 1);
             var choice = options[index];
 
@@ -103,8 +106,30 @@ namespace Alpha.API
 
         private bool IsLowHealth(int health)
         {
-            var effectiveHealth = health - FOOD_DISTANCE;
+            var foodDistance = GetClosestFood();
+            var effectiveHealth = health - (foodDistance + 1);
             return effectiveHealth < Snake.MaxHealth - _lowHealthThreshold;
+        }
+
+        private double GetClosestFood()
+        {
+            var foodCollection = _board.Food;
+            var distance = _you.Head.DistanceTo(foodCollection[0]);
+            var closestFood = foodCollection[0];
+
+            for (var i = 1; i < foodCollection.Length; i++)
+            {
+                var newDistance = _you.Head.DistanceTo(foodCollection[i]);
+
+                if (newDistance < distance)
+                {
+                    distance = newDistance;
+                    closestFood = foodCollection[i];
+                }
+            }
+
+            Console.WriteLine($"Closest food distance of {distance} at {closestFood}");
+            return distance;
         }
 
         private int CalculateHealthThreshold()
