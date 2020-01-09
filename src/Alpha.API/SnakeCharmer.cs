@@ -148,9 +148,9 @@ namespace Alpha.API
 
             foreach (var snake in enemySnakes)
             {
+                _grid[snake.Head] = CellType.EnemyHead;
                 var body = snake.Body.Skip(1).ToArray();
                 _grid.SetCells(body, CellType.Enemy);
-                _grid.SetCell(snake.Head, CellType.EnemyHead);
             }
         }
     }

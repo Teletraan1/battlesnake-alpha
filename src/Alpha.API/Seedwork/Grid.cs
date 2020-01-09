@@ -22,8 +22,7 @@ namespace Alpha.API.Seedwork
             {
                 try
                 {
-                    var result = coordinate != null ? _cells[coordinate.Y, coordinate.X] : CellType.Wall;
-                    return result;
+                    return _cells[coordinate.Y, coordinate.X];
                 }
                 catch (IndexOutOfRangeException)
                 {
@@ -32,7 +31,7 @@ namespace Alpha.API.Seedwork
             }
             set
             {
-                if (coordinate != null) _cells[coordinate.Y, coordinate.X] = value;
+                _cells[coordinate.Y, coordinate.X] = value;
             }
         }
 
@@ -48,15 +47,7 @@ namespace Alpha.API.Seedwork
 
             Initialized = true;
         }
-
-
-        public CellType GetCell(Coordinate coordinate)
-        {
-            if (coordinate == null) return CellType.Wall;
-
-            return this[coordinate];          
-        }
-
+        
         public List<Coordinate> GetCoordinatesByType(CellType type)
         {
             var collection = new List<Coordinate>();
@@ -74,7 +65,6 @@ namespace Alpha.API.Seedwork
 
         public void SetCell(Coordinate coordinate, CellType cellType)
         {
-            if (coordinate == null) return;
             this[coordinate] = cellType;
         }
 
@@ -95,8 +85,6 @@ namespace Alpha.API.Seedwork
 
         public CellType LookAhead(Coordinate coordinate, Direction direction)
         {
-            if (coordinate == null) throw new ArgumentNullException(nameof(coordinate));
-
             var adjacent = coordinate.ApplyDirection(direction);
 
             try
