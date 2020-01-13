@@ -96,5 +96,29 @@ namespace Alpha.API.Seedwork
                 return CellType.Wall;
             }
         }
+
+        public IEnumerable<Location> LookAhead(Coordinate coordinate)
+        {
+            var locations = new List<Location>();
+            var adjacents = coordinate.ApplyDirections();
+                        
+            foreach (var adjacent in adjacents)
+            {
+                var location = new Location(adjacent);
+                try
+                {
+                    var cellType = this[adjacent];
+                    location.CellType = cellType;
+                }
+                catch (IndexOutOfRangeException)
+                {
+                    location.CellType = CellType.Wall;
+                }
+
+                locations.Add(location);
+            }
+
+            return locations;
+        }
     }
 }

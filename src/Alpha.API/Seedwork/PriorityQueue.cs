@@ -6,6 +6,7 @@ namespace Alpha.API.Seedwork
     public class PriorityQueue<T> where T : class, IComparable<T>
     {
         private List<T> queue;
+        public int Count => queue.Count;
 
         public PriorityQueue()
         {

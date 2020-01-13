@@ -19,8 +19,6 @@ namespace Alpha.API
         private Snake[] _snakes;
         private Snake[] _enemySnakes;
 
-        private int _lowHealthThreshold;
-
         public SnakeCharmer(IRandomizer randomizer, IGrid grid)
         {
             _randomizer = randomizer;
@@ -37,8 +35,6 @@ namespace Alpha.API
             _you = state.You;
             _enemySnakes = state.Board.Snakes.Where(snake => snake.Id != _you.Id).ToArray();
 
-            _lowHealthThreshold = CalculateHealthThreshold();
-
             if (!_grid.IsInitialized()) _grid.Initialize(_board.Height, _board.Width);
 
             UpdateGrid(_board.Food, _you, _enemySnakes);
@@ -46,77 +42,46 @@ namespace Alpha.API
 
             Console.WriteLine();
             Console.WriteLine($"Turn {_turn}");
-            Console.WriteLine($"GameState You coords: {string.Join<Coordinate>(',', state.You.Body)}");
+            Console.WriteLine($"GameState You coords: {string.Join(',', state.You.Body)}");
             Console.WriteLine($"Head at {_you.Head}");
         }
 
         public Direction MoveSnake()
         {
-            var options = Direction.All.ToList();
+            Coordinate coordinate;
 
-            BasicAvoidance(options);
+            coordinate = Algorithms.AStar(_grid as Grid, _you.Head, GetClosestFood(out var distance));
 
-            if (options.Count == 1)
-                return options.First();
+            //if (IsLowHealth(_you.Health, out var foodLocation) || _you.Head == _you.Tail)
+            //    coordinate = Algorithms.AStar(_grid as Grid, _you.Head, foodLocation);
+            //else
+            //    coordinate = Algorithms.AStar(_grid as Grid, _you.Head, _you.Tail);
 
-            if (options.Count < 1) return Direction.Right;
+            var choice = Direction.All.ToList()
+                                      .Where(x => _you.Head.ApplyDirection(x) == coordinate)
+                                      .FirstOrDefault();            
 
-            if (IsLowHealth(_you.Health))
-            {
-                Console.WriteLine($"Low HP: {_you.Health}");
-            }
-
-            var index = _randomizer.Roll(0, options.Count - 1);
-            var choice = options[index];
-
-            Console.WriteLine($"Random choice is {choice}");
+            Console.WriteLine($"Choice is {choice}");
             Console.WriteLine();
 
-            return choice;
-        }
+            return choice ?? Direction.Up;
+        }       
 
-        private void BasicAvoidance(ICollection<Direction> options)
+        private bool IsLowHealth(int health, out Coordinate food)
         {
-            
-            var head = _you.Head;
-            foreach (var direction in Direction.All)
-            {
-                var cell = _grid.LookAhead(head, direction);
-                var coord = head.ApplyDirection(direction);
-
-                Console.WriteLine($"{direction} is {cell} {coord}");
-
-                if (cell == CellType.Enemy || cell == CellType.You || cell == CellType.Wall)
-                {
-                    options.Remove(direction);
-                    continue;
-                }
-
-                Console.WriteLine($"Viable Direction {direction} to {cell}");
-            }
-        }
-        
-        //Any snake's body-part except for heads.
-        private bool IsBody(Coordinate coordinate, Direction direction)
-        {
-            var cellType = _grid.LookAhead(coordinate, direction);
-            var result = cellType == CellType.Enemy || cellType == CellType.You;
-            return result;
+            food = GetClosestFood(out var distance);
+            var effectiveHealth = health - (distance + 1);
+            var allowableHealth = Snake.MaxHealth - CalculateHealthThreshold();
+            return effectiveHealth < allowableHealth;
         }
 
-        private bool IsLowHealth(int health)
-        {
-            var foodDistance = GetClosestFood();
-            var effectiveHealth = health - (foodDistance + 1);
-            return effectiveHealth < Snake.MaxHealth - _lowHealthThreshold;
-        }
-
-        private double GetClosestFood()
+        private Coordinate GetClosestFood(out double distance)
         {
             var foodCollection = _board.Food;
-            var distance = _you.Head.DistanceTo(foodCollection[0]);
             var closestFood = foodCollection[0];
 
+            distance = _you.Head.DistanceTo(foodCollection[0]);
+            
             for (var i = 1; i < foodCollection.Length; i++)
             {
                 var newDistance = _you.Head.DistanceTo(foodCollection[i]);
@@ -129,7 +94,7 @@ namespace Alpha.API
             }
 
             Console.WriteLine($"Closest food distance of {distance} at {closestFood}");
-            return distance;
+            return closestFood;
         }
 
         private int CalculateHealthThreshold()
@@ -138,6 +103,22 @@ namespace Alpha.API
             var denominator = _turn + _you.Health;
             var ratio = decimal.Divide(numerator, denominator) * Snake.MaxHealth;
             return (int)(Snake.MaxHealth - Math.Round(ratio));
+        }
+
+        private bool IsBiggest()
+        {
+            var biggestSnake = _you.Id;
+            int length = _you.Body.Length;
+            for (var i = 0; i < _enemySnakes.Length; i++)
+            {
+                var current = _enemySnakes[i];
+                if (current.Body.Length > length)
+                {
+                    biggestSnake = current.Id;
+                }
+            }
+
+            return _you.Id.Equals(biggestSnake, StringComparison.InvariantCultureIgnoreCase);
         }
 
         private void UpdateGrid(Coordinate[] food, Snake you, IEnumerable<Snake> enemySnakes)
@@ -153,5 +134,34 @@ namespace Alpha.API
                 _grid.SetCells(body, CellType.Enemy);
             }
         }
+
+        //private void BasicAvoidance(ICollection<Direction> options)
+        //{
+
+        //    var head = _you.Head;
+        //    foreach (var direction in Direction.All)
+        //    {
+        //        var cell = _grid.LookAhead(head, direction);
+        //        var coord = head.ApplyDirection(direction);
+
+        //        Console.WriteLine($"{direction} is {cell} {coord}");
+
+        //        if (cell == CellType.Enemy || cell == CellType.You || cell == CellType.Wall)
+        //        {
+        //            options.Remove(direction);
+        //            continue;
+        //        }
+
+        //        Console.WriteLine($"Viable Direction {direction} to {cell}");
+        //    }
+        //}
+
+        ////Any snake's body-part except for heads.
+        //private bool IsBody(Coordinate coordinate, Direction direction)
+        //{
+        //    var cellType = _grid.LookAhead(coordinate, direction);
+        //    var result = cellType == CellType.Enemy || cellType == CellType.You;
+        //    return result;
+        //}
     }
 }
