@@ -1,16 +1,18 @@
 ﻿using Alpha.API.Seedwork;
+using System;
 using System.Collections.Generic;
 
 namespace Alpha.API.Constants
 {
     public class CellType : Enumeration
     {
-        public static readonly CellType Wall = new CellType(-1, @"wall", int.MaxValue);
-        public static readonly CellType You = new CellType(0, @"you", int.MaxValue);
-        public static readonly CellType Enemy = new CellType(3, @"enemy", int.MaxValue);
-        public static readonly CellType EnemyHead = new CellType(4, "enemy-head", 3);
-        public static readonly CellType Empty = new CellType(1, @"empty", 2);
-        public static readonly CellType Food = new CellType(2, @"food", 1);
+        public static readonly CellType Wall = new CellType(0, @"wall", int.MaxValue);
+        public static readonly CellType You = new CellType(1, @"you", int.MaxValue);
+        public static readonly CellType YourTail = new CellType(2, @"your-tail", 2);
+        public static readonly CellType Food = new CellType(3, @"food", 1);
+        public static readonly CellType Empty = new CellType(4, @"empty", 2);        
+        public static readonly CellType Enemy = new CellType(5, @"enemy", int.MaxValue);
+        public static readonly CellType EnemyHead = new CellType(6, @"enemy-head", 3);
 
         public static readonly List<CellType> NonTraversable = new List<CellType> { Wall, You, Enemy };
 
@@ -20,11 +22,11 @@ namespace Alpha.API.Constants
         {
         }
 
-        private CellType(int value, string name) : base(value, name)
+        private CellType(Index index, string name) : base(index, name)
         {
         }
 
-        private CellType(int value, string name, int difficulty) : base(value, name)
+        private CellType(Index index, string name, int difficulty) : base(index, name)
         {
             Difficulty = difficulty;
         }

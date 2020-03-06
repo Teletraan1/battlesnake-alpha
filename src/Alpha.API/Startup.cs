@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace Alpha.API
 {
@@ -29,8 +28,8 @@ namespace Alpha.API
             services.AddControllers();
 
             services.AddSingleton<IRandomizer, Randomizer>();
-            services.AddTransient<ISnakeCharmer, SnakeCharmer>();
-            services.AddTransient<IGrid, Grid>();
+            services.AddScoped<ISnakeCharmer, SnakeCharmer>();
+            services.AddScoped<IGrid, Grid>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -46,8 +45,6 @@ namespace Alpha.API
             }
 
             app.UseRouting();
-
-            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

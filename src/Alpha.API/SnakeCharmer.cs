@@ -37,25 +37,34 @@ namespace Alpha.API
 
             if (!_grid.IsInitialized()) _grid.Initialize(_board.Height, _board.Width);
 
+            if (state.Turn <= 3)
+                CellType.YourTail.ChangeDifficulty(int.MaxValue);
+
             UpdateGrid(_board.Food, _you, _enemySnakes);
 
 
             Console.WriteLine();
             Console.WriteLine($"Turn {_turn}");
-            Console.WriteLine($"GameState You coords: {string.Join(',', state.You.Body)}");
+            Console.WriteLine($"GameState Your coords: {string.Join(',', state.You.Body)}");
             Console.WriteLine($"Head at {_you.Head}");
+            Console.WriteLine($"Tail at {_you.Tail}");
         }
 
         public Direction MoveSnake()
         {
             Coordinate coordinate;
 
-            coordinate = Algorithms.AStar(_grid as Grid, _you.Head, GetClosestFood(out var distance));
+            //coordinate = Algorithms.AStar(_grid as Grid, _you.Head, GetClosestFood(out var distance));
 
-            //if (IsLowHealth(_you.Health, out var foodLocation) || _you.Head == _you.Tail)
-            //    coordinate = Algorithms.AStar(_grid as Grid, _you.Head, foodLocation);
-            //else
+            //if (distance == -1)
             //    coordinate = Algorithms.AStar(_grid as Grid, _you.Head, _you.Tail);
+
+            if (IsLowHealth(_you.Health, out var foodLocation) || _you.Head == _you.Tail)
+                coordinate = Algorithms.AStar(_grid as Grid, _you.Head, foodLocation);
+            else if (IsBiggest())
+                coordinate = Algorithms.AStar(_grid as Grid, _you.Head, _enemySnakes[0].Head);
+            else
+                coordinate = Algorithms.AStar(_grid as Grid, _you.Head, _you.Tail);
 
             var choice = Direction.All.ToList()
                                       .Where(x => _you.Head.ApplyDirection(x) == coordinate)
@@ -77,24 +86,38 @@ namespace Alpha.API
 
         private Coordinate GetClosestFood(out double distance)
         {
-            var foodCollection = _board.Food;
-            var closestFood = foodCollection[0];
-
-            distance = _you.Head.DistanceTo(foodCollection[0]);
-            
-            for (var i = 1; i < foodCollection.Length; i++)
+            try
             {
-                var newDistance = _you.Head.DistanceTo(foodCollection[i]);
 
-                if (newDistance < distance)
+                var foodCollection = _board.Food;
+                if (foodCollection.Length <= 0)
                 {
-                    distance = newDistance;
-                    closestFood = foodCollection[i];
+                    distance = -1;
+                    return new Coordinate();
                 }
-            }
+                var closestFood = foodCollection[0];
 
-            Console.WriteLine($"Closest food distance of {distance} at {closestFood}");
-            return closestFood;
+                distance = _you.Head.DistanceTo(foodCollection[0]);
+
+                for (var i = 1; i < foodCollection.Length; i++)
+                {
+                    var newDistance = _you.Head.DistanceTo(foodCollection[i]);
+
+                    if (newDistance < distance)
+                    {
+                        distance = newDistance;
+                        closestFood = foodCollection[i];
+                    }
+                }
+
+                Console.WriteLine($"Closest food distance of {distance} at {closestFood}");
+                return closestFood;
+            }
+            catch(IndexOutOfRangeException e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
 
         private int CalculateHealthThreshold()
@@ -126,6 +149,7 @@ namespace Alpha.API
             _grid.Clear();
             _grid.SetCells(food, CellType.Food);
             _grid.SetCells(you.Body, CellType.You);
+            _grid.SetCell(you.Tail, CellType.YourTail);
 
             foreach (var snake in enemySnakes)
             {

@@ -12,13 +12,13 @@ namespace Alpha.API.Seedwork
         {
         }
 
-        protected Enumeration(int value, string displayName)
+        protected Enumeration(Index index, string displayName)
         {
-            Value = value;
+            Index = index;
             DisplayName = displayName;
         }
 
-        public int Value { get; }
+        public Index Index { get; }
 
         public string DisplayName { get; }
 
@@ -65,14 +65,14 @@ namespace Alpha.API.Seedwork
             }
 
             var typeMatches = GetType() == obj.GetType();
-            var valueMatches = Value.Equals(otherValue.Value);
+            var valueMatches = Index.Equals(otherValue.Index);
 
             return typeMatches && valueMatches;
         }
 
         public override int GetHashCode()
         {
-            return Value.GetHashCode();
+            return Index.GetHashCode();
         }
 
         public static int AbsoluteDifference(Enumeration firstValue, Enumeration secondValue)
@@ -80,13 +80,13 @@ namespace Alpha.API.Seedwork
             if (firstValue == null) throw new ArgumentNullException(nameof(firstValue));
             if (secondValue == null) throw new ArgumentNullException(nameof(secondValue));
 
-            var absoluteDifference = Math.Abs(firstValue.Value - secondValue.Value);
+            var absoluteDifference = Math.Abs(firstValue.Index.Value - secondValue.Index.Value);
             return absoluteDifference;
         }
 
-        public static T FromValue<T>(int value) where T : Enumeration, new()
+        public static T FromIndex<T>(Index index) where T : Enumeration, new()
         {
-            var matchingItem = parse<T, int>(value, "value", item => item.Value == value);
+            var matchingItem = parse<T, Index>(index, "value", item => item.Index.Equals(index));
             return matchingItem;
         }
 
@@ -112,7 +112,7 @@ namespace Alpha.API.Seedwork
         public int CompareTo(object other)
         {
             if (other == null) return -1;
-            return Value.CompareTo(((Enumeration)other).Value);
+            return Index.Value.CompareTo(((Enumeration)other).Index.Value);
         }
     }
 }
